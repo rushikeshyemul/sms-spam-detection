@@ -1,19 +1,28 @@
 import nltk
 import streamlit as st
-import pickle 
+import pickle
 import string
-
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')  
+# ✅ Download only if not available
+def download_nltk_data():
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
 
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords')
 
+download_nltk_data()
+
+# Initialize stemmer
 ps = PorterStemmer()
 
-
+# ✅ Preprocessing function
 def transform_text(text):
     text = text.lower()
     text = nltk.word_tokenize(text)
@@ -38,25 +47,23 @@ def transform_text(text):
 
     return " ".join(y)
 
-
+# ✅ Load vectorizer and model
 tk = pickle.load(open("vectorizer.pkl", 'rb'))
 model = pickle.load(open("model.pkl", 'rb'))
 
+# ✅ Streamlit UI
 st.title("SMS Spam Detection")
-#st.write("*Made by Edunet Foundation*")
-    
 
 input_sms = st.text_input("Enter the SMS")
 
 if st.button('Predict'):
-
-    # 1. preprocess
+    # 1. Preprocess
     transformed_sms = transform_text(input_sms)
-    # 2. vectorize
+    # 2. Vectorize
     vector_input = tk.transform([transformed_sms])
-    # 3. predict
+    # 3. Predict
     result = model.predict(vector_input)[0]
-    # 4. Display
+    # 4. Display Result
     if result == 1:
         st.header("Spam")
     else:
